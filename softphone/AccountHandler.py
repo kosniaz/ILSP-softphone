@@ -44,16 +44,22 @@ class AccountHandler(pj.AccountCallback):
         """
         logger.info(f"Call recieved: {call}")
         remote_uri = call.info().remote_uri
-
+        logger.info(f"Remote uri is {remote_uri}")
         if self.current_call: # or (remote_uri in "blacklist"):
             call.answer(486, "Busy")
             return
 
-        else:
-            call_handler = CallHandler(lib=self.lib, call=call)
-            call.set_callback(call_handler)
-            call.answer(180) # https://en.wikipedia.org/wiki/List_of_SIP_response_codes
-            # current_call.answer(200) # Would answer it immediately; Working
-            # self.lib.conf_connect(call.info().conf_slot, 0)
-            # self.lib.conf_connect(0, call.info().conf_slot)
-            logger.info(f"Answered incoming call from {call.info().remote_uri}")
+        try:
+            if not(self.current_call):
+                call_handler = CallHandler(lib=self.lib,call=call)
+                call.set_callback(call_handler)
+                call.answer(180) # https://en.wikipedia.org/wiki/List_of_SIP_response_codes
+                # current_call.answer(200) # Would answer it immediately; Working
+                # self.lib.conf_connect(call.info().conf_slot, 0)
+                # self.lib.conf_connect(0, call.info().conf_slot)
+                logger.info(f"Answered incoming call from {call.info().remote_uri}")
+
+        except SystemError as e:
+            logger.error(e)
+            call.hangup(501, "Sorry!!! :/ not ready to accept calls yet")
+            return 
