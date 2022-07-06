@@ -16,9 +16,10 @@ class AccountHandler(pj.AccountCallback):
     """
     sem = None
 
-    def __init__(self, lib, account=None):
+    def __init__(self, lib, curr_call=None, account= None):
         pj.AccountCallback.__init__(self, account)  # Can this be written differently ? Python is dirty
         self.lib = lib
+        self.current_call=curr_call
 
 
     def wait(self):
@@ -46,6 +47,7 @@ class AccountHandler(pj.AccountCallback):
         remote_uri = call.info().remote_uri
         logger.info(f"Remote uri is {remote_uri}")
         if self.current_call: # or (remote_uri in "blacklist"):
+            logger.info(f"Current call exists? It is here {self.current_call}")
             call.answer(486, "Busy")
             return
 

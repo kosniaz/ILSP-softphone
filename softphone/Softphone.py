@@ -121,7 +121,7 @@ class Softphone:
         account = self.lib.create_account(acc_config=account_cfg, set_default=default_account)
         account.set_transport(transport)
 
-        account_handler = AccountHandler(lib=self.lib, account=account)
+        account_handler = AccountHandler(lib=self.lib, curr_call=self.current_call,account=account)
         account.set_callback(account_handler)
 
         logger.info(f"Waiting for registration...")
