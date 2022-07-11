@@ -3,7 +3,7 @@ Until [this issue](https://github.com/pjsip/pjproject/issues/2352) is implemente
 
 **1a. Install PJSIP (patch by: malarinv)**
 ```bash
-sudo apt install python3 python3-dev build-essential libasound2-dev
+sudo apt install python3 python3-dev build-essential libasound2-dev libportaudio2
 wget https://github.com/DiscordPhone/pjproject/archive/py37.zip
 unzip py37.zip
 cd pjproject-py37
