@@ -179,47 +179,54 @@ except pj.Error as e:
     lib.destroy()
     lib = None
 
+
+def registration_main():
 ### initialize lib
+    
+    lib.init(log_cfg = pj.LogConfig(level=4, callback=log_cb))
+    lib.start()
+    
+    server="compute.ilsp.gr"
+    port=str(5062)
+    username="kosmas"
+    password="openshit"
+    
+    ### start registration
+    try:
+    
+        transport = lib.create_transport(
+            pj.TransportType.UDP,
+            #could be pj.TransportConfig(5080),
+            pj.TransportConfig(0) 
+        )
+    
+        print("\nListening on", transport.info().host, end=' ') 
+        print("port", transport.info().port, "\n")
 
-lib.init(log_cfg = pj.LogConfig(level=4, callback=log_cb))
-lib.start()
-
-server="compute.ilsp.gr"
-port=str(5060)
-username="kosmas"
-password="openshit"
-
-### start regitration
-try:
-
-    transport = lib.create_transport(
-        pj.TransportType.UDP,
-        #could be pj.TransportConfig(5080),
-        pj.TransportConfig(0) 
-    )
-
-    account_cfg = pj.AccountConfig(
-        domain   = server + ":" + port,
-        username = username,
-        password = password
-    )
-    acc = lib.create_account(account_cfg)
-
-    acc_cb = MyAccountCallback(acc)
-    acc.set_callback(acc_cb)
-    acc_cb.wait()
-
-    print("\n")
-    print("Registration complete, status=", acc.info().reg_status, \
-          "(" + acc.info().reg_reason + ")")
-    print("\nPress ENTER to quit")
-    sys.stdin.readline()
-
-    lib.destroy()
-    lib = None
-
-except pj.Error as e:
-    print("Exception: " + str(e))
-    lib.destroy()
-
-
+        account_cfg = pj.AccountConfig(
+            domain   = server + ":" + port,
+            username = username,
+            password = password
+        )
+        acc = lib.create_account(account_cfg)
+    
+        acc_cb = MyAccountCallback(acc)
+        acc.set_callback(acc_cb)
+        # this is a blocking wait
+        acc_cb.wait()
+    
+        print("\n")
+        print("Registration complete, status=", acc.info().reg_status, \
+              "(" + acc.info().reg_reason + ")")
+        print("\nPress ENTER to quit")
+        sys.stdin.readline()
+        current_call=acc.make_call(uri, cb=MyCallCallback())
+    
+        #lib.destroy()
+        #lib = None
+    
+    except pj.Error as e:
+        print("Exception: " + str(e))
+        lib.destroy()
+    
+    
