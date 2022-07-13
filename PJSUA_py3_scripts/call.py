@@ -20,12 +20,16 @@
 #
 import sys
 import pjsua as pj
+import threading
 
 LOG_LEVEL=3
 current_call = None
 
+# create singleton library instance
 lib = pj.Lib()
 
+def log_cb(level, str, len):
+    print(str, end=' ')
 
 # Callback to receive events from account
 class MyAccountCallback(pj.AccountCallback):
@@ -103,9 +107,6 @@ def make_call(uri):
         return None
         
 
-# Create library instance
-lib = pj.Lib()
-
 try:
     # Init library with default config and some customized
     # logging config.
@@ -178,21 +179,31 @@ except pj.Error as e:
     lib.destroy()
     lib = None
 
+### initialize lib
 
-import sys
-import pjsua as pj
-import threading
+lib.init(log_cfg = pj.LogConfig(level=4, callback=log_cb))
+lib.start()
 
+server="compute.ilsp.gr"
+port=str(5060)
+username="kosmas"
+password="openshit"
 
-def log_cb(level, str, len):
-    print(str, end=' ')
-
+### start regitration
 try:
-    lib.init(log_cfg = pj.LogConfig(level=4, callback=log_cb))
-    lib.create_transport(pj.TransportType.UDP, pj.TransportConfig(5080))
-    lib.start()
 
-    acc = lib.create_account(pj.AccountConfig("compute.ilsp.gr", "kosmas", "opensips"))
+    transport = lib.create_transport(
+        pj.TransportType.UDP,
+        #could be pj.TransportConfig(5080),
+        pj.TransportConfig(0) 
+    )
+
+    account_cfg = pj.AccountConfig(
+        domain   = server + ":" + port,
+        username = username,
+        password = password
+    )
+    acc = lib.create_account(account_cfg)
 
     acc_cb = MyAccountCallback(acc)
     acc.set_callback(acc_cb)
