@@ -21,8 +21,16 @@
 #
 import sys
 import pjsua as pj
+import os
 import threading
 import time
+
+from dotenv import load_dotenv
+load_dotenv(dotenv_path='.env')
+SERVER= os.environ.get('SIP_PROXY_HOST')
+PORT = os.environ.get('SIP_PROXY_PORT')
+USER= os.environ.get('SIP_USER')
+PASS= os.environ.get('SIP_PASS')
 
 def log_cb(level, str, len):
     
@@ -43,14 +51,24 @@ class MyAccountCallback(pj.AccountCallback):
             return
             
         print("Incoming call from ", call.info().remote_uri)
-        print("Press 'a' to answer")
 
-        current_call = call
+        my_current_call = call
 
-        call_cb = MyCallCallback(current_call)
-        current_call.set_callback(call_cb)
+        call_cb = MyCallCallback(my_current_call)
+        my_current_call.set_callback(call_cb)
 
-        current_call.answer(180)
+        my_current_call.answer(180)
+        answer="" 
+        while answer!="a" and answer!="h":
+            answer = input("enter a to answer, or h to reject")
+            if answer=="a":
+                my_current_call.answer(200)
+                break
+            elif answer=="h":
+                my_current_call.answer(486,"Busy")
+                break
+
+           
 
     def wait(self):
         self.sem = threading.Semaphore(0)
@@ -96,7 +114,8 @@ try:
     lib.create_transport(pj.TransportType.UDP, pj.TransportConfig(5080))
     lib.start()
 
-    acc = lib.create_account(pj.AccountConfig(domain="compute.ilsp.gr:5060", username="kosmas", password="opensips" ))
+    domain=SERVER+":"+PORT
+    acc = lib.create_account(pj.AccountConfig(domain=SERVER+":"+PORT, username=USER, password=PASS ))
 
     acc_cb = MyAccountCallback(acc)
     acc.set_callback(acc_cb)
@@ -109,6 +128,9 @@ try:
     sys.stdin.readline()
     if len(sys.argv)>1:
         current_call=acc.make_call(sys.argv[1], cb=MyCallCallback())
+    else:
+        print("no arguments passed, not making the call - going to passive mode instead.")
+        print("waiting for a call")
     
 
     while True:

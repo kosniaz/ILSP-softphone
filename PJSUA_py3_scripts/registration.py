@@ -49,7 +49,7 @@ try:
     lib.create_transport(pj.TransportType.UDP, pj.TransportConfig(5080))
     lib.start()
 
-    acc = lib.create_account(pj.AccountConfig("compute.ilsp.gr", "kosmas", "opensips"))
+    acc = lib.create_account(pj.AccountConfig("compute.ilsp.gr", "kosmas", "xxx"))
 
     acc_cb = MyAccountCallback(acc)
     acc.set_callback(acc_cb)
