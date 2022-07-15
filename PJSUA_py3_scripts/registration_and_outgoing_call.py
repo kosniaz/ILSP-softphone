@@ -28,11 +28,29 @@ def log_cb(level, str, len):
     
     print(str, end=' ')
 
+current_call=None
+
 class MyAccountCallback(pj.AccountCallback):
     sem = None
 
     def __init__(self, account):
         pj.AccountCallback.__init__(self, account)
+
+    def on_incoming_call(self, call):
+        global current_call 
+        if current_call:
+            call.answer(486, "Busy")
+            return
+            
+        print("Incoming call from ", call.info().remote_uri)
+        print("Press 'a' to answer")
+
+        current_call = call
+
+        call_cb = MyCallCallback(current_call)
+        current_call.set_callback(call_cb)
+
+        current_call.answer(180)
 
     def wait(self):
         self.sem = threading.Semaphore(0)
@@ -78,7 +96,7 @@ try:
     lib.create_transport(pj.TransportType.UDP, pj.TransportConfig(5080))
     lib.start()
 
-    acc = lib.create_account(pj.AccountConfig(domain="compute.ilsp.gr:5062", username="kosmas", password="opensips" ))
+    acc = lib.create_account(pj.AccountConfig(domain="compute.ilsp.gr:5060", username="kosmas", password="opensips" ))
 
     acc_cb = MyAccountCallback(acc)
     acc.set_callback(acc_cb)
@@ -89,11 +107,15 @@ try:
           "(" + acc.info().reg_reason + ")")
     print("\nPress ENTER to make a call")
     sys.stdin.readline()
-    if sys.argv[1]:
+    if len(sys.argv)>1:
         current_call=acc.make_call(sys.argv[1], cb=MyCallCallback())
-    time.sleep(10)
-    #lib.destroy()
-    #lib = None
+    
+
+    while True:
+        pass
+
+    lib.destroy()
+    lib = None
 
 except pj.Error as e:
     print("Exception: " + str(e))
