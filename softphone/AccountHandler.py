@@ -16,10 +16,10 @@ class AccountHandler(pj.AccountCallback):
     """
     sem = None
 
-    def __init__(self, lib, curr_call=None, account= None):
+    def __init__(self, lib, curr_call_ref=[], account= None):
         pj.AccountCallback.__init__(self, account)  # Can this be written differently ? Python is dirty
         self.lib = lib
-        self.current_call=curr_call
+        self.current_call_ref=curr_call_ref
 
 
     def wait(self):
@@ -45,14 +45,16 @@ class AccountHandler(pj.AccountCallback):
         """
         logger.info(f"Call recieved: {call}")
         remote_uri = call.info().remote_uri
+        current_call=self.current_call_ref[0]
+
         logger.info(f"Remote uri is {remote_uri}")
-        if self.current_call: # or (remote_uri in "blacklist"):
-            logger.info(f"Current call exists? It is here {self.current_call}")
+        if current_call: # or (remote_uri in "blacklist"):
+            logger.info(f"Current call exists? It is here {current_call}")
             call.answer(486, "Busy")
             return
 
         try:
-            if not(self.current_call):
+            if not(current_call):
                 call_handler = CallHandler(lib=self.lib,call=call)
                 call.set_callback(call_handler)
                 call.answer(180) # https://en.wikipedia.org/wiki/List_of_SIP_response_codes
@@ -60,6 +62,7 @@ class AccountHandler(pj.AccountCallback):
                 # self.lib.conf_connect(call.info().conf_slot, 0)
                 # self.lib.conf_connect(0, call.info().conf_slot)
                 logger.info(f"Answered incoming call from {call.info().remote_uri}")
+                self.current_call_ref[0]=call
 
         except SystemError as e:
             logger.error(e)
