@@ -24,8 +24,8 @@ sudo python3 setup.py install
 **2. Install softphone python package**
 ```bash
 git clone git@github.com:DiscordPhone/softphone.git
-python3 -m pip install -e softphone
-python3 -m pip install -r softphone/requirements.txt
+python3 -m pip install -e ILSP-softphone
+python3 -m pip install -r ILSP-softphone/requirements.txt
 ```
 Or:
 ```bash
