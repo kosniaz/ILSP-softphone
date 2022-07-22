@@ -27,10 +27,10 @@ import time
 
 #from dotenv import load_dotenv
 #load_dotenv(dotenv_path='.env')
-SERVER= os.environ.get('SIP_PROXY_HOST',HOSTNAME)
+SERVER= os.environ.get('SIP_PROXY_HOST','gavdos.ilsp.gr')
 PORT = os.environ.get('SIP_PROXY_PORT','5060')
-USER= os.environ.get('SIP_USER','antigoni')
-PASS= os.environ.get('SIP_PASS','opensips')
+USER= os.environ.get('SIP_USER','neomelos')
+PASS= os.environ.get('SIP_PASS','kwdikos')
 
 def log_cb(level, str, len):
     
@@ -107,6 +107,11 @@ class MyCallCallback(pj.CallCallback):
         else:
             print("Media is inactive")
 
+    def on_transfer_request(self,dst,code):
+    
+        print("some transfer callback")
+        return 202
+
 lib = pj.Lib()
 
 try:
@@ -133,7 +138,7 @@ try:
         print("waiting for a call")
     
 
-    time.sleep(30)
+    time.sleep(300)
 
     lib.destroy()
     lib = None
