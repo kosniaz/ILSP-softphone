@@ -16,9 +16,10 @@ class AccountHandler(pj.AccountCallback):
     """
     sem = None
 
-    def __init__(self, lib, account=None):
+    def __init__(self, lib, curr_call_ref=[], account= None):
         pj.AccountCallback.__init__(self, account)  # Can this be written differently ? Python is dirty
         self.lib = lib
+        self.current_call_ref=curr_call_ref
 
 
     def wait(self):
@@ -44,16 +45,27 @@ class AccountHandler(pj.AccountCallback):
         """
         logger.info(f"Call recieved: {call}")
         remote_uri = call.info().remote_uri
+        current_call=self.current_call_ref[0]
 
-        if self.current_call: # or (remote_uri in "blacklist"):
+        logger.info(f"Remote uri is {remote_uri}")
+        if current_call: # or (remote_uri in "blacklist"):
+            logger.info(f"Current call exists? It is here {current_call}")
             call.answer(486, "Busy")
             return
 
-        else:
-            call_handler = CallHandler(lib=self.lib, call=call)
-            call.set_callback(call_handler)
-            call.answer(180) # https://en.wikipedia.org/wiki/List_of_SIP_response_codes
-            # current_call.answer(200) # Would answer it immediately; Working
-            # self.lib.conf_connect(call.info().conf_slot, 0)
-            # self.lib.conf_connect(0, call.info().conf_slot)
-            logger.info(f"Answered incoming call from {call.info().remote_uri}")
+        try:
+            if not(current_call):
+                call_handler = CallHandler(lib=self.lib,call=call)
+                call.set_callback(call_handler)
+                call.answer(180) # https://en.wikipedia.org/wiki/List_of_SIP_response_codes
+                # current_call.answer(200) # Would answer it immediately; Working
+                # self.lib.conf_connect(call.info().conf_slot, 0)
+                # self.lib.conf_connect(0, call.info().conf_slot)
+                logger.info(f"Answered incoming call from {call.info().remote_uri}")
+                self.current_call_ref[0]=call
+
+        except SystemError as e:
+            logger.error(e)
+            call.hangup(501, "Sorry!!! :/ not ready to accept calls yet")
+            return 
+

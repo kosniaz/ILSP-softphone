@@ -82,6 +82,7 @@ class Softphone:
         # Call variables
         self.call_handler = True
         self.current_call = None
+        self.current_call_ref=[]
         
         logger.info(f"Object created.")
 
@@ -103,7 +104,7 @@ class Softphone:
         logger.info("Creating transport and generating SIP URI.")
         transport = self.lib.create_transport(
             protocol,
-            pj.TransportConfig(0) # TransportConfig(host=bind_address, port=bind_port) # TODO: Add bind_address and bind_port here.
+            pj.TransportConfig(5080) # TransportConfig(host=bind_address, port=bind_port) # TODO: Add bind_address and bind_port here.
         )
 
         public_sip_uri = f"sip:{username}@{str(transport.info().host)}:{str(transport.info().port)}"
@@ -116,12 +117,12 @@ class Softphone:
             password = password
         )
 
-        account_cfg.id = public_sip_uri
+        #account_cfg.id = public_sip_uri
 
         account = self.lib.create_account(acc_config=account_cfg, set_default=default_account)
         account.set_transport(transport)
 
-        account_handler = AccountHandler(lib=self.lib, account=account)
+        account_handler = AccountHandler(lib=self.lib, curr_call_ref=[self.current_call],account=account)
         account.set_callback(account_handler)
 
         logger.info(f"Waiting for registration...")
